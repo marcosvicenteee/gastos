@@ -1,0 +1,26 @@
+# Blueprint de despliegue en Render.
+#
+# En el dashboard: crear "Blueprint" apuntando a este repositorio, y añadir un
+# PostgreSQL (New + → PostgreSQL). Render enlaza DATABASE_URL automáticamente
+# si se llama igual que aquí; AUTH_SECRET y DEVICE_TOKEN_SECRET se generan.
+services:
+  - type: web
+    name: gastos
+    runtime: node
+    plan: free
+    # `prisma db push` crea el esquema y genera el cliente; el seed de la
+    # cuenta demo se lanza a mano la primera vez con `npm run db:seed`.
+    buildCommand: npm install && npx prisma db push && npm run build
+    startCommand: npx next start -p $PORT
+    healthCheckPath: /api/auth/me
+    envVars:
+      - key: DATABASE_URL
+        sync: false # lo aporta el PostgreSQL enlazado desde el dashboard
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: DEVICE_TOKEN_SECRET
+        generateValue: true
+      - key: APP_URL
+        value: https://gastos.onrender.com # cámbialo por tu dominio real
+      - key: NODE_VERSION
+        value: 20

@@ -1,0 +1,34 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# production
+dist/
+
+# local data (embedded postgres cluster used by `npm run db:local`)
+.pgdata/
+
+# misc
+.DS_Store
+*.pem
+*.tsbuildinfo
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files
+.env
+.env*.local
+
+# vercel
+.vercel

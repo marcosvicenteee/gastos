@@ -1,0 +1,308 @@
+// Esquema Prisma — PostgreSQL
+//
+// Decisiones de diseño relevantes:
+//  * Los importes se guardan como `Decimal(14,2)`. Nunca `Float`: el dinero
+//    no se representa con binarios y `0.1 + 0.2` no es 0.3.
+//  * Las fechas se guardan SIEMPRE en UTC (`DateTime` de Prisma). La zona
+//    horaria del usuario se aplica sólo al presentar los datos, de modo que un
+//    gasto registrado a las 00:32 en Madrid siga siendo 00:32 en el listado.
+//  * `idempotencyKey` es único por usuario. Es la columna que garantiza que un
+//    mismo pago nunca se registre dos veces, venga del Atajo, de la
+//    notificación de Revolut o de una reentrega de la cola offline.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Usuarios y acceso
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  passwordHash String
+  name         String?
+  currency     String  @default("EUR")
+  timezone     String  @default("Europe/Madrid")
+  isDemo       Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions         Session[]
+  deviceTokens     DeviceToken[]
+  pushSubscriptions PushSubscription[]
+  expenses         Expense[]
+  categories       Category[]
+  merchantRules    MerchantRule[]
+  notificationRules NotificationRule[]
+  ingestionEvents  IngestionEvent[]
+}
+
+/// Sesión de navegador. El token plano sólo viaja en la cookie; aquí se
+/// guarda su SHA-256, por lo que una filtración de la base de datos no
+/// permite suplantar sesiones.
+model Session {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  userAgent  String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// Token de dispositivo para los Atajos de iPhone. Revocable, con fecha de
+/// último uso y contador. Sólo se almacena el hash SHA-256 del token.
+model DeviceToken {
+  id         String    @id @default(cuid())
+  userId     String
+  label      String
+  tokenHash  String    @unique
+  /// Primeros caracteres del token en claro, sólo para que el usuario pueda
+  /// reconocerlo en la lista sin exponerlo.
+  displayHint String
+  lastUsedAt DateTime?
+  useCount   Int       @default(0)
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ingestionEvents IngestionEvent[]
+
+  @@index([userId])
+}
+
+/// Suscripción push de la PWA (confirmación de gasto registrado).
+model PushSubscription {
+  id         String    @id @default(cuid())
+  userId     String
+  endpoint   String    @unique
+  p256dh     String
+  auth       String
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Categorías
+// ---------------------------------------------------------------------------
+
+/// Categorías por usuario. Al registrarse se copian las predeterminadas, de
+/// forma que el Atajo puede ofrecer siempre una lista real y no una constante
+/// duplicada en el cliente.
+model Category {
+  id        String  @id @default(cuid())
+  userId    String
+  name      String
+  slug      String
+  /// Clave de icono SVG (ver `src/lib/categories.ts`). Nunca emojis.
+  icon      String  @default("Wallet")
+  /// Color de acento en hexadecimal, p. ej. `#6366F1`.
+  color     String  @default("#6366F1")
+  position  Int     @default(0)
+  isArchived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+  merchantRules MerchantRule[]
+
+  @@unique([userId, slug])
+  @@index([userId, position])
+}
+
+// ---------------------------------------------------------------------------
+// Gastos
+// ---------------------------------------------------------------------------
+
+enum ExpenseSource {
+  /// Alta manual desde la web.
+  web
+  /// Atajo "Añadir gasto" de iPhone.
+  shortcut
+  /// Captura automática desde una notificación de Revolut (iOS 27+).
+  revolut
+}
+
+enum IngestStatus {
+  created
+  duplicate
+  ignored
+  failed
+}
+
+enum MatchType {
+  contains
+  exact
+  regex
+}
+
+model Expense {
+  id       String  @id @default(cuid())
+  userId   String
+  amount   Decimal @db.Decimal(14, 2)
+  currency String  @default("EUR")
+
+  merchant   String?
+  categoryId String?
+  description String?
+
+  source     ExpenseSource
+  /// Método de pago declarado (`card`, `cash`, `transfer`…). Nunca datos de
+  /// tarjeta: ni número, ni PAN, ni caducidad.
+  paymentMethod String?
+
+  /// Identificador de la transacción en el proveedor, si existe.
+  sourceTransactionId String?
+
+  /// Clave de idempotencia: `client_token` (UUID del Atajo), o
+  /// `source_transaction_id`, o hash de contenido. Única por usuario.
+  idempotencyKey String
+
+  /// Momento en que se produjo el gasto (no en que se registró).
+  expenseDate   DateTime
+  /// Zona horaria que declara el cliente, sólo informativa/auditoría.
+  sourceTimezone String?
+
+  /// Fecha de recepción de la notificación, en el flujo automático.
+  receivedAt DateTime?
+
+  /// `true` en cuanto un usuario toca un gasto creado automáticamente. El
+  /// `source` original nunca se reescribe: sólo se marca como editado.
+  edited Boolean @default(false)
+
+  /// Cómo se decidió la categoría: `manual`, `rule` o `parser`.
+  categorySource String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  ingestionEvents IngestionEvent[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, expenseDate(sort: Desc)])
+  @@index([userId, categoryId])
+  @@index([userId, source])
+}
+
+// ---------------------------------------------------------------------------
+// Reglas de categorización automática
+// ---------------------------------------------------------------------------
+
+/// Reglas de comercio → categoría. Evaluadas por `priority` ascendente; gana
+/// la primera que coincide.
+model MerchantRule {
+  id         String    @id @default(cuid())
+  userId     String
+  pattern    String
+  matchType  MatchType @default(contains)
+  categoryId String
+  priority   Int       @default(100)
+  isEnabled  Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, pattern, matchType])
+  @@index([userId, priority])
+}
+
+// ---------------------------------------------------------------------------
+// Integraciones automáticas
+// ---------------------------------------------------------------------------
+
+/// Reglas de extracción de datos a partir del texto de una notificación.
+///
+/// Por qué reglas y no un parser fijo: el texto exacto que envía Revolut (o
+/// cualquier otra app) no es un contrato estable y Apple no garantiza ningún
+/// formato. Con reglas editables desde el panel, si el proveedor cambia la
+/// frase el usuario lo arregla en un minuto sin tocar código ni rehacer el
+/// Atajo. Además se guarda el texto crudo recibido para poder depurar.
+model NotificationRule {
+  id        String @id @default(cuid())
+  userId    String
+  name      String
+  isEnabled Boolean @default(true)
+  /// Menor = se evalúa antes.
+  priority  Int    @default(100)
+
+  /// Texto de la notificación contra el que se evalúa (título + subtítulo +
+  /// cuerpo). Si `match` no encuentra nada, la regla se descarta.
+  match           String
+  matchType       MatchType @default(regex)
+  /// Índices de los grupos de captura de `match` (base 1).
+  amountGroup     Int?
+  merchantGroup   Int?
+  currencyGroup   Int?
+
+  /// `false` para notificaciones que NO son un gasto (abonos, recibos,
+  /// declines, Recordatorio de saldo...). Se ignoran sin dar error.
+  isExpense       Boolean @default(true)
+
+  /// Nota libre para documentar la regla.
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, priority])
+}
+
+/// Traza de todo lo que llega por la vía automática. Sirve para tres cosas:
+/// auditar qué se registró, depurar reglas que no casan y ser el punto de
+/// enganche (`provider`) para una futura fuente oficial de transacciones.
+model IngestionEvent {
+  id             String   @id @default(cuid())
+  userId         String?
+  deviceTokenId  String?
+  source         String
+  status         IngestStatus
+  appName        String?
+  notificationId String?
+  rawTitle       String?
+  rawSubtitle    String?
+  rawBody        String?
+  receivedAt     DateTime?
+  parsedAmount   Decimal? @db.Decimal(14, 2)
+  parsedCurrency String?
+  parsedMerchant String?
+  // Rule that produced this interpretation. Without it there is no way to
+  // debug why a given notification was read one way and not another.
+  matchedRuleId  String?
+  expenseId      String?
+  errorCode      String?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  deviceToken DeviceToken? @relation(fields: [deviceTokenId], references: [id], onDelete: SetNull)
+  expense     Expense?     @relation(fields: [expenseId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([status])
+}

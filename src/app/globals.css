@@ -1,0 +1,211 @@
+@import 'tailwindcss';
+
+/*
+ * Modo oscuro por clase, no por preferencia del sistema.
+ *
+ * La razón para no usar `prefers-color-scheme` es que el usuario tiene que
+ * poder cambiarlo desde la aplicación y que la elección se conserve: si el
+ * sistema cambia de tema a las 3 de la mañana, la pantalla no debería dar un
+ * vuelco mientras alguien anota un gasto.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Los colores viven en variables CSS y no como clases de Tailwind para poder
+ * cambiar un tema entero tocando un solo bloque, y para que Recharts pueda
+ * leerlos (`var(--color-...)`) sin tener que recibir props de color.
+ */
+:root {
+  --color-page: oklch(98% 0.003 250);
+  --color-surface: oklch(100% 0 0);
+  --color-surface-2: oklch(96.5% 0.004 250);
+  --color-border: oklch(90% 0.006 250);
+  --color-border-strong: oklch(82% 0.01 250);
+  --color-text: oklch(22% 0.015 255);
+  --color-text-muted: oklch(52% 0.012 255);
+  --color-text-subtle: oklch(65% 0.01 255);
+  --color-accent: oklch(55% 0.16 255);
+  --color-accent-hover: oklch(48% 0.16 255);
+  --color-accent-soft: oklch(95% 0.03 255);
+  --color-accent-text: oklch(100% 0 0);
+  --color-positive: oklch(58% 0.13 155);
+  --color-negative: oklch(57% 0.19 25);
+  --color-warning: oklch(70% 0.14 75);
+  --shadow-card: 0 1px 2px oklch(22% 0.015 255 / 0.05);
+  --shadow-pop: 0 10px 30px oklch(22% 0.015 255 / 0.12);
+  --radius-card: 0.75rem;
+}
+
+.dark {
+  --color-page: oklch(17% 0.012 255);
+  --color-surface: oklch(21% 0.014 255);
+  --color-surface-2: oklch(25% 0.016 255);
+  --color-border: oklch(30% 0.018 255);
+  --color-border-strong: oklch(40% 0.02 255);
+  --color-text: oklch(96% 0.004 250);
+  --color-text-muted: oklch(72% 0.012 255);
+  --color-text-subtle: oklch(58% 0.012 255);
+  --color-accent: oklch(68% 0.15 255);
+  --color-accent-hover: oklch(75% 0.14 255);
+  --color-accent-soft: oklch(30% 0.05 255);
+  --color-accent-text: oklch(15% 0.01 255);
+  --color-positive: oklch(70% 0.14 155);
+  --color-negative: oklch(68% 0.17 25);
+  --color-warning: oklch(78% 0.13 75);
+  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-pop: 0 10px 30px oklch(0% 0 0 / 0.5);
+}
+
+@theme inline {
+  --color-page: var(--color-page);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-subtle: var(--color-text-subtle);
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-text: var(--color-accent-text);
+  --color-positive: var(--color-positive);
+  --color-negative: var(--color-negative);
+  --color-warning: var(--color-warning);
+  --radius-card: var(--radius-card);
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-page);
+    color: var(--color-text);
+    /* Los números de dinero se alinean en columna, así que las cifras
+       tabulares no produces el "salto" al cambiar 9,00 por 10,00. */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El anillo de foco sólo se muestra con teclado: con ratón sería ruido. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* En móvil, iOS aplica su propio zoom al enfocar un input con fuente
+     pequeña. 16px es el mínimo para que no lo haga. */
+  @media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .field {
+    width: 100%;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text);
+  }
+
+  .field::placeholder {
+    color: var(--color-text-subtle);
+  }
+
+  .field:disabled {
+    opacity: 0.6;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background-color: var(--color-accent);
+    color: var(--color-accent-text);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background-color: var(--color-accent-hover);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-surface-2);
+  }
+
+  .btn-danger {
+    background-color: transparent;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-negative);
+  }
+
+  .btn-danger:hover:not(:disabled) {
+    border-color: var(--color-negative);
+  }
+}
+
+/*
+ * Un único spinner reutilizado por toda la aplicación, en lugar de uno por
+ * componente. `currentColor` hace que herede el color del texto que lo rodea.
+ */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 9999px;
+  animation: spin 700ms linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
