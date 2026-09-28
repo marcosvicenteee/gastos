@@ -12,7 +12,7 @@ services:
     # cuenta demo se lanza a mano la primera vez con `npm run db:seed`.
     buildCommand: npm install && npx prisma db push && npm run build
     startCommand: npx next start -p $PORT
-    healthCheckPath: /api/auth/me
+    healthCheckPath: /api/health
     envVars:
       - key: DATABASE_URL
         sync: false # lo aporta el PostgreSQL enlazado desde el dashboard
@@ -21,6 +21,12 @@ services:
       - key: DEVICE_TOKEN_SECRET
         generateValue: true
       - key: APP_URL
-        value: https://gastos.onrender.com # cámbialo por tu dominio real
+        value: https://gastos-84b6.onrender.com # tu URL real en Render
+      # Keep-alive: el servidor se pingea a sí mismo cada N minutos y el
+      # plan free no se duerme. Cambia la URL si cambia tu servicio.
+      - key: SELF_URL
+        value: https://gastos-84b6.onrender.com
+      - key: KEEPALIVE_INTERVAL_MINUTES
+        value: "10"
       - key: NODE_VERSION
         value: 20

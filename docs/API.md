@@ -110,6 +110,17 @@ Dos variantes en la misma ruta de ingesta:
 
 `status` posible: `created | duplicate | ignored | failed`.
 
+### Salud y keep-alive
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| GET | `/api/health` | **Público y sin BD**: `{"status":"ok","timestamp":...}` |
+
+Pensado para el keep-alive del plan free de Render. El propio servidor hace
+`GET` a `SELF_URL/api/health` cada `KEEPALIVE_INTERVAL_MINUTES` (ver
+`src/instrumentation.ts`), y sirve además como `healthCheckPath` del blueprint
+`render.yaml` y como URL opcional de un pinger externo.
+
 ### Exportación
 
 | Método | Ruta | Descripción |

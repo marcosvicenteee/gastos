@@ -39,6 +39,28 @@ El repositorio trae un blueprint en [`render.yaml`](render.yaml):
 Los secretos los genera Render (`generateValue: true`); no subas nunca un
 `.env` real — está en `.gitignore` y sólo existe `.env.example` en el repo.
 
+### Keep-alive (evitar que Render duerma)
+
+El plan free de Render se duerme tras ~15 min sin peticiones y la primera
+petición tarda 30–60 s (o el Atajo falla por timeout). El endpoint público
+`GET /api/health` devuelve `{"status":"ok"}` sin tocar la BD. Tres formas de
+que reciba ping cada X minutos:
+
+1. **Automático desde el propio servidor (ya configurado):** define
+   `SELF_URL` con la URL pública del servicio y, opcionalmente,
+   `KEEPALIVE_INTERVAL_MINUTES` (por defecto `10`). En el arranque
+   (`src/instrumentation.ts`) el servidor se pingea a sí mismo a esa
+   frecuencia y el servicio no se duerme. Ambas variables están en
+   [`render.yaml`](render.yaml).
+2. **Pinger externo (redundante, funciona aunque el proceso se reinicie):**
+   UptimeRobot o cron-job.org → monitor
+   `https://TU-SERVICIO.onrender.com/api/health` cada 5–10 min.
+3. **Desde el iPhone:** automatización horaria de Atajos con una sola acción
+   `Contenido de URL` → `GET` a esa misma URL (no necesita token).
+
+Si el servicio ya está dormido, una petición externa lo despierta igualmente:
+sólo cobra los primeros segundos.
+
 ## Scripts
 
 | Script | Qué hace |
