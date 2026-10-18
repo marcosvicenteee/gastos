@@ -11,49 +11,75 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * Los colores viven en variables CSS y no como clases de Tailwind para poder
- * cambiar un tema entero tocando un solo bloque, y para que Recharts pueda
- * leerlos (`var(--color-...)`) sin tener que recibir props de color.
+ * Tokens de diseño — Estilo Apple.
+ *
+ * Paleta monográfica con acentos azules precisos. Sin sombras: la separación
+ * viene del blanco sobre gris claro, del radio 28px en tarjetas, y de bordes
+ * sutiles de 1px #d6d6d6.
  */
 :root {
-  --color-page: oklch(98% 0.003 250);
-  --color-surface: oklch(100% 0 0);
-  --color-surface-2: oklch(96.5% 0.004 250);
-  --color-border: oklch(90% 0.006 250);
-  --color-border-strong: oklch(82% 0.01 250);
-  --color-text: oklch(22% 0.015 255);
-  --color-text-muted: oklch(52% 0.012 255);
-  --color-text-subtle: oklch(65% 0.01 255);
-  --color-accent: oklch(55% 0.16 255);
-  --color-accent-hover: oklch(48% 0.16 255);
-  --color-accent-soft: oklch(95% 0.03 255);
-  --color-accent-text: oklch(100% 0 0);
-  --color-positive: oklch(58% 0.13 155);
-  --color-negative: oklch(57% 0.19 25);
-  --color-warning: oklch(70% 0.14 75);
-  --shadow-card: 0 1px 2px oklch(22% 0.015 255 / 0.05);
-  --shadow-pop: 0 10px 30px oklch(22% 0.015 255 / 0.12);
-  --radius-card: 0.75rem;
+  --color-gallery-white: #ffffff;
+  --color-studio-mist: #f5f5f7;
+  --color-paper-frost: #fafafc;
+  --color-hairline-silver: #d6d6d6;
+  --color-control-gray: #e6e6e8;
+  --color-ink: #1d1d1f;
+  --color-slate: #707070;
+  --color-steel: #86868b;
+  --color-apple-blue: #0066cc;
+  --color-pricing-blue: #0071e3;
+  --color-launch-orange: #b64400;
+  --color-positive: #28a745;
+  --color-negative: #d70015;
+  --color-warning: #b64400;
+
+  /* Legacy aliases for components still referencing old tokens */
+  --color-page: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f5f7;
+  --color-border: #d6d6d6;
+  --color-border-strong: #86868b;
+  --color-text: #1d1d1f;
+  --color-text-muted: #707070;
+  --color-text-subtle: #86868b;
+  --color-accent: #0066cc;
+  --color-accent-hover: #0055b3;
+  --color-accent-soft: #f0f7ff;
+  --color-accent-text: #ffffff;
+  --shadow-card: none;
+  --shadow-pop: 0 4px 24px rgb(0 0 0 / 0.08);
+  --radius-card: 28px;
 }
 
 .dark {
-  --color-page: oklch(17% 0.012 255);
-  --color-surface: oklch(21% 0.014 255);
-  --color-surface-2: oklch(25% 0.016 255);
-  --color-border: oklch(30% 0.018 255);
-  --color-border-strong: oklch(40% 0.02 255);
-  --color-text: oklch(96% 0.004 250);
-  --color-text-muted: oklch(72% 0.012 255);
-  --color-text-subtle: oklch(58% 0.012 255);
-  --color-accent: oklch(68% 0.15 255);
-  --color-accent-hover: oklch(75% 0.14 255);
-  --color-accent-soft: oklch(30% 0.05 255);
-  --color-accent-text: oklch(15% 0.01 255);
-  --color-positive: oklch(70% 0.14 155);
-  --color-negative: oklch(68% 0.17 25);
-  --color-warning: oklch(78% 0.13 75);
-  --shadow-card: 0 1px 2px oklch(0% 0 0 / 0.3);
-  --shadow-pop: 0 10px 30px oklch(0% 0 0 / 0.5);
+  --color-gallery-white: #1d1d1f;
+  --color-studio-mist: #000000;
+  --color-paper-frost: #2d2d2f;
+  --color-hairline-silver: #48484a;
+  --color-control-gray: #3a3a3c;
+  --color-ink: #f5f5f7;
+  --color-slate: #a1a1a6;
+  --color-steel: #6e6e73;
+  --color-apple-blue: #4da6ff;
+  --color-pricing-blue: #4da6ff;
+  --color-launch-orange: #ff9f0a;
+  --color-positive: #30d158;
+  --color-negative: #ff453a;
+  --color-warning: #ff9f0a;
+
+  --color-page: #000000;
+  --color-surface: #1d1d1f;
+  --color-surface-2: #2d2d2f;
+  --color-border: #48484a;
+  --color-border-strong: #6e6e73;
+  --color-text: #f5f5f7;
+  --color-text-muted: #a1a1a6;
+  --color-text-subtle: #6e6e73;
+  --color-accent: #4da6ff;
+  --color-accent-hover: #80c4ff;
+  --color-accent-soft: #1a2a3a;
+  --color-accent-text: #ffffff;
+  --shadow-pop: 0 4px 24px rgb(0 0 0 / 0.4);
 }
 
 @theme inline {
@@ -75,6 +101,9 @@
   --radius-card: var(--radius-card);
   --shadow-card: var(--shadow-card);
   --shadow-pop: var(--shadow-pop);
+
+  /* Typography */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @layer base {
@@ -90,9 +119,10 @@
     background-color: var(--color-page);
     color: var(--color-text);
     /* Los números de dinero se alinean en columna, así que las cifras
-       tabulares no produces el "salto" al cambiar 9,00 por 10,00. */
+       tabulares no producen el "salto" al cambiar 9,00 por 10,00. */
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   /* El anillo de foco sólo se muestra con teclado: con ratón sería ruido. */
@@ -113,20 +143,31 @@
 }
 
 @layer components {
+  /*
+   * Tarjeta estilo Apple: blanca, radio 28px, sin sombra, borde sutil 1px.
+   * La separación viene del contraste con el fondo gris #f5f5f7.
+   */
   .card {
     background-color: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-card);
-    box-shadow: var(--shadow-card);
+    box-shadow: none;
   }
 
   .field {
     width: 100%;
     background-color: var(--color-surface);
     border: 1px solid var(--color-border-strong);
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
     color: var(--color-text);
+    transition: border-color 150ms ease;
+  }
+
+  .field:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(0 102 204 / 0.15);
   }
 
   .field::placeholder {
@@ -134,7 +175,7 @@
   }
 
   .field:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
   .btn {
@@ -142,36 +183,55 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.9rem;
+    border-radius: 9999px;
+    padding: 0.65rem 1.25rem;
     font-size: 0.875rem;
     font-weight: 500;
+    letter-spacing: -0.02em;
     cursor: pointer;
-    transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    transition: background-color 150ms ease, opacity 150ms ease, transform 100ms ease;
+    border: none;
+  }
+
+  .btn:active:not(:disabled) {
+    transform: scale(0.98);
   }
 
   .btn:disabled {
-    opacity: 0.55;
+    opacity: 0.45;
     cursor: not-allowed;
   }
 
   .btn-primary {
-    background-color: var(--color-accent);
-    color: var(--color-accent-text);
+    background-color: var(--color-pricing-blue);
+    color: #ffffff;
   }
 
   .btn-primary:hover:not(:disabled) {
-    background-color: var(--color-accent-hover);
+    background-color: #0077ed;
+  }
+
+  .dark .btn-primary:hover:not(:disabled) {
+    background-color: #66b3ff;
   }
 
   .btn-secondary {
-    background-color: var(--color-surface);
+    background-color: transparent;
     border: 1px solid var(--color-border-strong);
     color: var(--color-text);
   }
 
   .btn-secondary:hover:not(:disabled) {
     background-color: var(--color-surface-2);
+  }
+
+  .btn-ghost {
+    background-color: transparent;
+    color: var(--color-accent);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-accent-soft);
   }
 
   .btn-danger {
@@ -202,6 +262,45 @@
   border-top-color: transparent;
   border-radius: 9999px;
   animation: spin 700ms linear infinite;
+}
+
+/*
+ * Tipografía display para headlines grandes.
+ * Tracking negativo característico de Apple en tamaños grandes.
+ */
+.text-display {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.text-heading {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.14;
+}
+
+.text-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.47;
+}
+
+.text-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.33;
+}
+
+.text-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.21;
 }
 
 @media (prefers-reduced-motion: reduce) {

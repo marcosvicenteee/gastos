@@ -19,6 +19,9 @@ import { useToast } from '@/components/toast';
  *
  * Se piden las estadísticas y los últimos gastos en paralelo porque son
  * independientes; encadenarlos duplicaría el tiempo de espera.
+ *
+ * Estilo Apple: tarjetas blancas con radio 28px sobre fondo gris #f5f5f7,
+ * tipografía con tracking negativo, sin sombras.
  */
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -29,12 +32,6 @@ const SOURCE_LABEL: Record<string, string> = {
 
 type TrendGranularity = 'day' | 'week' | 'month';
 
-/**
- * El selector no cambia el rango consultado: la API devuelve ya las tres
- * series (día, semana y mes) y aquí se elige cuál se dibuja. Es deliberado:
- * pedir un rango arbitrario obligaría a recalcular también los totales de
- * arriba, que hoy responden a "hoy / esta semana / este mes".
- */
 const TREND_LABELS: Record<TrendGranularity, { button: string; title: string }> = {
   day: { button: 'Día', title: 'Últimos 30 días con gasto' },
   week: { button: 'Semana', title: 'Últimas 12 semanas con gasto' },
@@ -89,7 +86,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-3 text-text-muted">
+      <div className="flex items-center gap-3 text-body text-slate">
         <span className="spinner" />
         Cargando resumen…
       </div>
@@ -98,11 +95,11 @@ export default function DashboardPage() {
 
   if (error || !stats) {
     return (
-      <div className="card flex items-start gap-3 p-4 text-negative">
-        <AlertIcon className="mt-0.5 shrink-0" />
+      <div className="card flex items-start gap-3 p-5 text-body text-negative">
+        <AlertIcon className="mt-0.5 shrink-0" width={20} height={20} />
         <div>
           <p className="font-medium">No se pudo cargar el resumen.</p>
-          <p className="text-sm text-text-muted">{error}</p>
+          <p className="text-body-small text-slate">{error}</p>
         </div>
       </div>
     );
@@ -119,9 +116,9 @@ export default function DashboardPage() {
         : statistics.byMonth;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">Resumen</h1>
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-heading text-3xl text-ink">Resumen</h1>
         <div className="flex gap-2">
           <button
             type="button"
@@ -129,24 +126,24 @@ export default function DashboardPage() {
             disabled={downloading}
             className="btn btn-secondary"
           >
-            {downloading ? <span className="spinner" /> : <DownloadIcon />}
+            {downloading ? <span className="spinner" /> : <DownloadIcon width={16} height={16} />}
             Exportar
           </button>
           <Link href="/gastos?nuevo=1" className="btn btn-primary">
-            <PlusIcon />
+            <PlusIcon width={16} height={16} />
             Nuevo gasto
           </Link>
         </div>
       </div>
 
       {totals.monthOverMonth === null ? (
-        <p className="text-sm text-text-muted">
-          Este mes: <strong className="text-text">{formatMoney(totals.month, currency)}</strong>
+        <p className="text-body text-slate">
+          Este mes: <strong className="text-ink">{formatMoney(totals.month, currency)}</strong>
         </p>
       ) : (
-        <p className="text-sm text-text-muted">
+        <p className="text-body text-slate">
           Este mes:{' '}
-          <strong className="text-text">{formatMoney(totals.month, currency)}</strong>{' '}
+          <strong className="text-ink">{formatMoney(totals.month, currency)}</strong>{' '}
           <span className={up ? 'text-negative' : 'text-positive'}>
             {up ? '+' : ''}
             {formatPercent(totals.monthOverMonth)}
@@ -170,22 +167,22 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="card p-4">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-medium text-text-muted">
+      <div className="card p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-body-small font-medium text-slate">
             {TREND_LABELS[granularity].title}
           </h2>
-          <div className="flex rounded-lg border border-border-strong p-0.5" role="group" aria-label="Agrupación del gráfico">
+          <div className="flex rounded-full border border-hairline-silver p-0.5" role="group" aria-label="Agrupación del gráfico">
             {(Object.keys(TREND_LABELS) as TrendGranularity[]).map((key) => (
               <button
                 key={key}
                 type="button"
                 onClick={() => setGranularity(key)}
                 aria-pressed={granularity === key}
-                className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                className={`rounded-full px-3 py-1 text-caption transition-colors ${
                   granularity === key
                     ? 'bg-accent-soft font-medium text-accent'
-                    : 'text-text-muted hover:text-text'
+                    : 'text-slate hover:text-ink'
                 }`}
               >
                 {TREND_LABELS[key].button}
@@ -201,23 +198,23 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="card p-4">
-          <h2 className="mb-3 text-sm font-medium text-text-muted">Por categoría</h2>
+        <div className="card p-5">
+          <h2 className="mb-4 text-body-small font-medium text-slate">Por categoría</h2>
           {statistics.byCategory.length === 0 ? (
             <Empty />
           ) : (
             <>
               <CategoryDonut data={statistics.byCategory} currency={currency} />
-              <ul className="mt-3 space-y-1.5">
+              <ul className="mt-4 space-y-2">
                 {statistics.byCategory.slice(0, 6).map((item) => (
-                  <li key={item.categoryId ?? item.categoryName} className="flex items-center gap-2 text-sm">
+                  <li key={item.categoryId ?? item.categoryName} className="flex items-center gap-2.5 text-body-small">
                     <span
                       className="h-2.5 w-2.5 shrink-0 rounded-full"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span className="min-w-0 flex-1 truncate">{item.categoryName}</span>
-                    <span className="text-text-muted">{item.count}</span>
-                    <span className="w-24 text-right font-medium">
+                    <span className="min-w-0 flex-1 truncate text-ink">{item.categoryName}</span>
+                    <span className="text-slate">{item.count}</span>
+                    <span className="w-24 text-right font-medium text-ink">
                       {formatMoney(item.total, currency)}
                     </span>
                   </li>
@@ -227,8 +224,8 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="card p-4">
-          <h2 className="mb-3 text-sm font-medium text-text-muted">Por mes</h2>
+        <div className="card p-5">
+          <h2 className="mb-4 text-body-small font-medium text-slate">Por mes</h2>
           {statistics.byMonth.length === 0 ? (
             <Empty />
           ) : (
@@ -237,36 +234,36 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="card divide-y divide-border">
-        <div className="flex items-center justify-between p-4">
-          <h2 className="text-sm font-medium text-text-muted">Últimos gastos</h2>
-          <Link href="/gastos" className="text-sm text-accent hover:underline">
+      <div className="card divide-y divide-hairline-silver">
+        <div className="flex items-center justify-between p-5">
+          <h2 className="text-body-small font-medium text-slate">Últimos gastos</h2>
+          <Link href="/gastos" className="text-body-small font-medium text-apple-blue hover:underline">
             Ver todos
           </Link>
         </div>
         {recent.length === 0 ? (
-          <p className="px-4 pb-4 text-sm text-text-muted">Todavía no hay gastos.</p>
+          <p className="px-5 pb-5 text-body-small text-slate">Todavía no hay gastos.</p>
         ) : (
           <ul>
             {recent.map((expense) => (
-              <li key={expense.id} className="flex items-center gap-3 px-4 py-3">
+              <li key={expense.id} className="flex items-center gap-3 px-5 py-3.5">
                 <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-base"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-studio-mist text-base"
                   style={{ color: expense.category?.color ?? 'var(--color-text-subtle)' }}
                   aria-hidden="true"
                 >
                   <CategoryIcon name={expense.category?.icon} />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
+                  <p className="truncate text-body font-medium text-ink">
                     {expense.merchant ?? expense.description ?? 'Sin comercio'}
                   </p>
-                  <p className="truncate text-xs text-text-subtle">
+                  <p className="truncate text-caption text-steel">
                     {expense.category?.name ?? 'Sin categoría'} · {SOURCE_LABEL[expense.source]} ·{' '}
                     {formatRelative(expense.expenseDate)}
                   </p>
                 </div>
-                <span className="shrink-0 font-medium">{expense.amountFormatted}</span>
+                <span className="shrink-0 text-body font-medium text-ink">{expense.amountFormatted}</span>
               </li>
             ))}
           </ul>
@@ -287,16 +284,16 @@ function Stat({
 }) {
   return (
     <div className="card p-4">
-      <p className="text-xs text-text-muted">{label}</p>
-      <p className="mt-1 text-lg font-semibold leading-tight">{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-text-subtle">{hint}</p>}
+      <p className="text-caption text-slate">{label}</p>
+      <p className="mt-1 text-heading text-xl text-ink">{value}</p>
+      {hint && <p className="mt-0.5 text-caption text-steel">{hint}</p>}
     </div>
   );
 }
 
 function Empty() {
   return (
-    <p className="py-8 text-center text-sm text-text-muted">
+    <p className="py-10 text-center text-body-small text-slate">
       Aún no hay datos suficientes para dibujar el gráfico.
     </p>
   );

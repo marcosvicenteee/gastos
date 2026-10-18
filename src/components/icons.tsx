@@ -7,13 +7,16 @@
  * pasar el color a mano en cada uso.
  *
  * Todos siguen el mismo trazo (2px, `currentColor`, sin relleno) para que la
- * interfaz no se vea despareja.
+ * interfaz no se vea despareja. Estilo Apple: iconos pequeños y monocromos.
  */
 import type { SVGProps } from 'react';
 
-type IconProps = SVGProps<SVGSVGElement>;
+type IconProps = SVGProps<SVGSVGElement> & {
+  width?: number;
+  height?: number;
+};
 
-function Icon({ children, ...props }: IconProps) {
+function Icon({ children, width = 24, height = 24, ...props }: IconProps) {
   return (
     <svg
       viewBox="0 0 24 24"
@@ -22,8 +25,8 @@ function Icon({ children, ...props }: IconProps) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      width="1em"
-      height="1em"
+      width={width}
+      height={height}
       aria-hidden="true"
       {...props}
     >

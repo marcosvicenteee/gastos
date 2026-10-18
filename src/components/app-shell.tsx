@@ -24,6 +24,9 @@ import { useToast } from './toast';
  * Se optó por una barra inferior en lugar de un menú desplegable porque la
  * mano que usa la app sostiene el teléfono por abajo: llega a la barra inferior
  * con el pulgar, y abrir un menú para después elegir es un paso de más.
+ *
+ * Estilo Apple: barra blanca con borde sutil #d6d6d6, tipografía compacta
+ * con tracking negativo, y controles sin caja.
  */
 
 const LINKS = [
@@ -69,17 +72,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       {/* Barra lateral: sólo en pantallas grandes. */}
-      <aside className="hidden w-60 shrink-0 border-r border-border bg-surface lg:flex lg:flex-col">
-        <div className="px-5 py-5">
-          <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
+      <aside className="hidden w-60 shrink-0 border-r border-hairline-silver bg-gallery-white lg:flex lg:flex-col">
+        <div className="px-6 py-6">
+          <Link href="/" className="flex items-center gap-2.5 text-label text-ink">
             <span className="text-accent">
-              <ChartIcon />
+              <ChartIcon width={22} height={22} />
             </span>
             Gastos
           </Link>
         </div>
         <nav className="flex-1 px-3">
-          <ul className="space-y-1">
+          <ul className="space-y-0.5">
             {LINKS.map(({ href, label, Icon }) => {
               const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
               return (
@@ -87,14 +90,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link
                     href={href}
                     aria-current={active ? 'page' : undefined}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                    className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-body transition-colors ${
                       active
-                        ? 'bg-accent-soft font-medium text-accent'
-                        : 'text-text-muted hover:bg-surface-2 hover:text-text'
+                        ? 'font-medium text-accent bg-accent-soft'
+                        : 'text-slate hover:bg-studio-mist hover:text-ink'
                     }`}
                   >
                     <span className="text-base">
-                      <Icon />
+                      <Icon width={18} height={18} />
                     </span>
                     {label}
                   </Link>
@@ -103,16 +106,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             })}
           </ul>
         </nav>
-        <div className="space-y-3 border-t border-border p-3">
+        <div className="space-y-4 border-t border-hairline-silver p-4">
           <div className="flex items-center justify-between gap-2 px-1">
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">{session?.user.name ?? '—'}</p>
-              <p className="truncate text-xs text-text-subtle">{session?.user.email ?? ''}</p>
+              <p className="truncate text-body font-medium text-ink">
+                {session?.user.name ?? '—'}
+              </p>
+              <p className="truncate text-caption text-steel">
+                {session?.user.email ?? ''}
+              </p>
             </div>
             <ThemeToggle />
           </div>
-          <button type="button" onClick={logout} className="btn btn-secondary w-full">
-            <LogoutIcon />
+          <button type="button" onClick={logout} className="btn btn-secondary w-full text-sm">
+            <LogoutIcon width={16} height={16} />
             Cerrar sesión
           </button>
         </div>
@@ -120,10 +127,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Cabecera móvil: incluye el tema, que en móvil no cabe en la barra. */}
-        <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 lg:hidden">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+        <header className="flex items-center justify-between border-b border-hairline-silver bg-gallery-white px-5 py-3.5 lg:hidden">
+          <Link href="/" className="flex items-center gap-2 text-label text-ink">
             <span className="text-accent">
-              <ChartIcon />
+              <ChartIcon width={20} height={20} />
             </span>
             Gastos
           </Link>
@@ -132,20 +139,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <button
               type="button"
               onClick={logout}
-              className="btn btn-secondary px-2 py-2 text-base"
+              className="btn btn-ghost px-2 py-2"
               aria-label="Cerrar sesión"
             >
-              <LogoutIcon />
+              <LogoutIcon width={18} height={18} />
             </button>
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 pb-24 lg:px-8 lg:py-8 lg:pb-8">{children}</main>
+        <main className="flex-1 px-5 py-6 pb-28 lg:px-10 lg:py-8 lg:pb-10">{children}</main>
       </div>
 
       {/* Barra inferior: sólo en móvil. `env(safe-area-inset-*)` deja el botón
           de inicio del iPhone por encima. */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline-silver bg-paper-frost lg:hidden">
         <ul className="grid grid-cols-5">
           {LINKS.map(({ href, label, Icon }) => {
             const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
@@ -154,14 +161,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   href={href}
                   aria-current={active ? 'page' : undefined}
-                  className={`flex flex-col items-center gap-0.5 py-2 text-[0.65rem] transition-colors ${
-                    active ? 'text-accent' : 'text-text-subtle'
+                  className={`flex flex-col items-center gap-0.5 py-2 text-caption transition-colors ${
+                    active ? 'text-accent' : 'text-steel'
                   }`}
                   style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
                 >
-                  <span className="text-lg">
-                    <Icon />
-                  </span>
+                  <Icon width={22} height={22} />
                   {label}
                 </Link>
               </li>

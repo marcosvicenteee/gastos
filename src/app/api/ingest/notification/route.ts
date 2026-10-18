@@ -113,7 +113,12 @@ export const POST = withErrorHandling(async (request: NextRequest) => {
       amount: amount.toString(),
       currency: outcome.currency ?? 'EUR',
       merchant: outcome.merchant,
-      description: text.slice(0, 500),
+      // La nota se deja vacía a propósito. El texto crudo de la notificación
+      // (banco, comercio e importe en tres líneas) no es una nota: es ruido que
+      // se acababa mostrando en el listado, duplicando información que ya
+      // está en el comercio y el importe. Para auditar qué se recibió queda la
+      // traza de ingesta, que sí conserva el texto original.
+      description: null,
       category: null,
       source: 'revolut',
       // El texto de la notificación no dice con qué se pagó (tarjeta,

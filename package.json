@@ -24,7 +24,9 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "test:e2e": "tsx scripts/e2e.ts",
     "test:unit": "node --env-file-if-exists=.env --import tsx --test \"tests/**/*.test.ts\"",
-    "test": "npm run test:unit"
+    "test": "npm run test:unit",
+    "test:wallet": "tsx scripts/check-wallet-parse.ts",
+    "test:wallet:e2e": "tsx scripts/check-wallet-ingest.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -12,7 +12,9 @@ export default async function LoginPage() {
 
   return (
     <ToastProvider>
-      <AuthForm mode="login" />
+      <div className="bg-gallery-white min-h-dvh">
+        <AuthForm mode="login" />
+      </div>
     </ToastProvider>
   );
 }

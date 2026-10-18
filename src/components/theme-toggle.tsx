@@ -9,6 +9,8 @@ import { MoonIcon, SunIcon } from './icons';
  * El atributo `dark` se escribe en el `<script>` del `layout.tsx` antes del
  * primer pintado. Este botón sólo lo cambia después, cuando ya se ve algo, y
  * por eso no puede provocar un parpadeo.
+ *
+ * Estilo Apple: control compacto sin caja, con icono monocromo.
  */
 export function ThemeToggle() {
   const [dark, setDark] = useState(false);
@@ -35,13 +37,11 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      // Antes del efecto no se sabe qué tema hay, y pintar el icono equivocado
-      // y cambiarlo un instante después se ve como un parpadeo.
       aria-label={ready && dark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
       title={ready && dark ? 'Tema claro' : 'Tema oscuro'}
-      className="btn btn-secondary px-2 py-2 text-base"
+      className="flex h-9 w-9 items-center justify-center rounded-full text-slate transition-colors hover:bg-studio-mist hover:text-ink"
     >
-      {ready && dark ? <SunIcon /> : <MoonIcon />}
+      {ready && dark ? <SunIcon width={18} height={18} /> : <MoonIcon width={18} height={18} />}
     </button>
   );
 }

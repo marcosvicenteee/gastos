@@ -11,7 +11,9 @@ export default async function RegisterPage() {
 
   return (
     <ToastProvider>
-      <AuthForm mode="register" />
+      <div className="bg-gallery-white min-h-dvh">
+        <AuthForm mode="register" />
+      </div>
     </ToastProvider>
   );
 }

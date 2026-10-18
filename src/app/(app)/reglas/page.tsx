@@ -470,6 +470,9 @@ function TestSheet({ onClose }: { onClose: () => void }) {
               <span className="text-text-subtle">Comercio: </span>
               {result.outcome.merchant ?? 'no detectado'}
             </p>
+            {result.outcome.hint && (
+              <p className="text-warning">{result.outcome.hint}</p>
+            )}
             {result.diagnostics.wouldMatchDifferentRule && (
               <p className="text-warning">
                 Ojo: casaría con una regla que está desactivada.

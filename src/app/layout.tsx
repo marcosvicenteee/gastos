@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: {
@@ -7,8 +14,6 @@ export const metadata: Metadata = {
     template: '%s · Gastos',
   },
   description: 'Control de gastos personales con captura desde el iPhone.',
-  // Es una aplicación privada: no tiene sentido que un buscador la indexe ni
-  // que las previsualizaciones sociales la muestren.
   robots: { index: false, follow: false },
   icons: { icon: '/favicon.svg' },
 };
@@ -16,18 +21,16 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  // `viewport-fit=cover` más `env(safe-area-inset-*)` deja el contenido fuera
-  // del notch y del indicador de inicio de los iPhone modernos.
   viewportFit: 'cover',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#f7f8fa' },
-    { media: '(prefers-color-scheme: dark)', color: '#1a1c20' },
+    { media: '(prefers-color-scheme: light)', color: '#f5f5f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
   ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={inter.variable}>
       {/*
         El tema se decide antes de pintar. Si se hiciera en un efecto de React,
         la página aparecería un instante en claro antes de pasar a oscuro.
@@ -40,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className="min-h-dvh bg-page text-text antialiased">
+      <body className="min-h-dvh bg-gallery-white text-text antialiased">
         {children}
       </body>
     </html>
